@@ -53,3 +53,17 @@ test('validation fails for missing evidence fields', () => {
   assert.equal(result.ok, false);
   assert.equal(result.issues.some((issue) => issue.issue === 'missing fixture'), true);
 });
+
+test('reports json summaries', () => {
+  const dir = tempDir();
+  addEntry(dir, {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'blocked',
+    expected: 'network-free smoke',
+    actual: 'external dependency unavailable',
+    classification: 'blocked'
+  });
+  const parsed = JSON.parse(reportLedger(dir, 'json'));
+  assert.equal(parsed.summary.blocked, 1);
+});
