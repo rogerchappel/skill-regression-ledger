@@ -40,5 +40,9 @@
     "scripts",
     "README.md",
     "LICENSE"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/rogerchappel/skill-regression-ledger/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/skill-regression-ledger#readme"
 }
