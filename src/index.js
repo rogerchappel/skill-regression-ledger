@@ -61,8 +61,11 @@ export function addEntry(targetDir, input) {
 
 export function validateEntry(entry) {
   const issues = [];
-  for (const field of ['fixture', 'command', 'result', 'expected', 'actual', 'classification']) {
+  for (const field of ['id', 'recordedAt', 'fixture', 'command', 'result', 'expected', 'actual', 'classification']) {
     if (!entry[field] || String(entry[field]).trim() === '') issues.push(`missing ${field}`);
+  }
+  if (entry.recordedAt && Number.isNaN(Date.parse(entry.recordedAt))) {
+    issues.push(`invalid recordedAt ${entry.recordedAt}`);
   }
   if (entry.result && !VALID_RESULTS.has(entry.result)) issues.push(`invalid result ${entry.result}`);
   return issues;
@@ -91,7 +94,10 @@ export function reportLedger(targetDir = process.cwd(), format = 'markdown') {
   const entries = readEntries(targetDir);
   const summary = summarize(entries);
   if (format === 'json') return JSON.stringify({ summary, entries }, null, 2);
-  const rows = entries.map((entry) => `| ${entry.fixture || 'missing'} | ${entry.result || 'missing'} | ${entry.classification || 'missing'} | ${entry.command || 'missing'} |`);
+  const tableCell = (value) => String(value || 'missing')
+    .replace(/\r\n?|\n/g, '<br>')
+    .replace(/\|/g, '\\|');
+  const rows = entries.map((entry) => `| ${tableCell(entry.fixture)} | ${tableCell(entry.result)} | ${tableCell(entry.classification)} | ${tableCell(entry.command)} |`);
   return [
     '# Skill Regression Ledger Report',
     '',

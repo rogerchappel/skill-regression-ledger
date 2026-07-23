@@ -26,3 +26,22 @@ test('cli validate returns non-zero for invalid ledger', () => {
   fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), '{"result":"oops"}\n');
   assert.equal(run(['validate', '--ledger', dir], io), 2);
 });
+
+test('cli validate rejects manually supplied entries without metadata', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-metadata-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+  const entry = {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass'
+  };
+  fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), `${JSON.stringify(entry)}\n`);
+
+  assert.equal(run(['validate', '--ledger', dir], io), 2);
+  assert.match(lines.join('\n'), /missing id/);
+  assert.match(lines.join('\n'), /missing recordedAt/);
+});
