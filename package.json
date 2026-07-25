@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "description": "Append-only regression evidence ledger for agent skills and prompts.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/skill-regression-ledger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/skill-regression-ledger/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/skill-regression-ledger#readme",
+  "files": [
+    "bin/",
+    "src/",
+    "docs/",
+    "SKILL.md"
+  ],
   "bin": {
     "skill-regression-ledger": "./bin/skill-regression-ledger.js"
   },
