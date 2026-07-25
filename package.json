@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "description": "Append-only regression evidence ledger for agent skills and prompts.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/skill-regression-ledger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/skill-regression-ledger/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/skill-regression-ledger#readme",
+  "files": [
+    "bin/",
+    "src/",
+    "docs/",
+    "SKILL.md"
+  ],
   "bin": {
     "skill-regression-ledger": "./bin/skill-regression-ledger.js"
   },
@@ -13,7 +27,8 @@
     "test": "node --test test/*.test.js",
     "check": "node scripts/check.mjs",
     "build": "node scripts/build.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "package:check": "node scripts/package-smoke.mjs"
   },
   "keywords": ["agent-skills", "regression", "ledger", "cli"],
   "author": "Roger Chappel",
