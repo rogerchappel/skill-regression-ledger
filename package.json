@@ -27,7 +27,8 @@
     "test": "node --test test/*.test.js",
     "check": "node scripts/check.mjs",
     "build": "node scripts/build.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "package:check": "node scripts/package-smoke.mjs"
   },
   "keywords": ["agent-skills", "regression", "ledger", "cli"],
   "author": "Roger Chappel",
