@@ -63,6 +63,10 @@ console.log(validateLedger('skills/my-skill'));
 
 Run `npm test`, then record fixture outcomes from your own test harness. Fail the job on `skill-regression-ledger validate --ledger <dir>` when evidence is missing or malformed.
 
+Maintainers can run `npm run package:check` before a release. It inspects the
+publish file list, packs the project, imports the library from the tarball, and
+executes the packed CLI.
+
 ## Privacy and Safety
 
 This package is local-only. It does not upload telemetry, call model APIs, or mutate skill registries. Treat ledger entries as review artifacts and avoid pasting secrets, customer data, or private transcripts into `expected`, `actual`, or `notes` fields.
