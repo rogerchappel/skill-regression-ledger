@@ -27,6 +27,15 @@ test('cli validate returns non-zero for invalid ledger', () => {
   assert.equal(run(['validate', '--ledger', dir], io), 2);
 });
 
+test('cli validate returns non-zero when an initialized ledger has no evidence', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-empty-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+
+  assert.equal(run(['validate', '--ledger', dir], io), 2);
+  assert.match(lines.join('\n'), /ledger contains no evidence entries/);
+});
+
 test('cli validate rejects manually supplied entries without metadata', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-metadata-'));
   const { io, lines } = capture();

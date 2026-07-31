@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 export const LEDGER_DIR = '.skill-regression-ledger';
 export const LEDGER_FILE = 'ledger.jsonl';
@@ -32,7 +33,7 @@ export function readEntries(targetDir = process.cwd()) {
 
 export function normalizeEntry(input = {}) {
   const entry = {
-    id: input.id || `run-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}`,
+    id: input.id || `run-${new Date().toISOString().replace(/[-:.TZ]/g, '')}-${randomUUID().slice(0, 8)}`,
     recordedAt: input.recordedAt || new Date().toISOString(),
     fixture: input.fixture || '',
     command: input.command || '',
@@ -74,9 +75,20 @@ export function validateEntry(entry) {
 export function validateLedger(targetDir = process.cwd()) {
   const entries = readEntries(targetDir);
   const issues = [];
+  if (entries.length === 0) {
+    issues.push({ line: 0, issue: 'ledger contains no evidence entries' });
+  }
+  const idLines = new Map();
   entries.forEach((entry) => {
     if (entry._error) issues.push({ line: entry._line, issue: entry._error });
     validateEntry(entry).forEach((issue) => issues.push({ line: entry._line, issue }));
+    if (entry.id) {
+      if (idLines.has(entry.id)) {
+        issues.push({ line: entry._line, issue: `duplicate id ${entry.id} (first seen on line ${idLines.get(entry.id)})` });
+      } else {
+        idLines.set(entry.id, entry._line);
+      }
+    }
   });
   return { ok: issues.length === 0, entries: entries.length, issues };
 }

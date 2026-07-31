@@ -61,7 +61,7 @@ console.log(validateLedger('skills/my-skill'));
 
 ## CI Usage
 
-Run `npm test`, then record fixture outcomes from your own test harness. Fail the job on `skill-regression-ledger validate --ledger <dir>` when evidence is missing or malformed.
+Run `npm test`, then record at least one fixture outcome from your own test harness. Fail the job on `skill-regression-ledger validate --ledger <dir>` when the ledger is empty or evidence is missing, malformed, or has a duplicate ID. An initialized but empty ledger is not valid evidence and the command exits nonzero.
 
 Maintainers can run `npm run package:check` before a release. It inspects the
 publish file list, packs the project, imports the library from the tarball, and

@@ -15,6 +15,17 @@ test('initializes a ledger file', () => {
   assert.equal(fs.existsSync(paths.file), true);
 });
 
+test('validation rejects an initialized ledger without evidence', () => {
+  const dir = tempDir();
+  initLedger(dir);
+
+  assert.deepEqual(validateLedger(dir), {
+    ok: false,
+    entries: 0,
+    issues: [{ line: 0, issue: 'ledger contains no evidence entries' }]
+  });
+});
+
 test('adds and reads a fixture-backed entry', () => {
   const dir = tempDir();
   addEntry(dir, {
@@ -28,6 +39,24 @@ test('adds and reads a fixture-backed entry', () => {
   const entries = readEntries(dir);
   assert.equal(entries.length, 1);
   assert.equal(entries[0].result, 'pass');
+});
+
+test('automatic ids remain unique for rapid additions', () => {
+  const dir = tempDir();
+  const input = {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass'
+  };
+
+  const first = addEntry(dir, input);
+  const second = addEntry(dir, input);
+
+  assert.notEqual(first.id, second.id);
+  assert.equal(validateLedger(dir).ok, true);
 });
 
 test('reports markdown summaries', () => {
@@ -76,6 +105,27 @@ test('validation rejects missing and unusable required metadata', () => {
     { line: 1, issue: 'missing id' },
     { line: 1, issue: 'missing recordedAt' },
     { line: 2, issue: 'invalid recordedAt not-a-date' }
+  ]);
+});
+
+test('validation reports duplicate manual ids on the duplicate line', () => {
+  const dir = tempDir();
+  initLedger(dir);
+  const file = path.join(dir, '.skill-regression-ledger', 'ledger.jsonl');
+  const entry = {
+    id: 'run-manual',
+    recordedAt: '2026-07-31T16:00:00.000Z',
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass'
+  };
+  fs.appendFileSync(file, `${JSON.stringify(entry)}\n${JSON.stringify(entry)}\n`);
+
+  assert.deepEqual(validateLedger(dir).issues, [
+    { line: 2, issue: 'duplicate id run-manual (first seen on line 1)' }
   ]);
 });
 
