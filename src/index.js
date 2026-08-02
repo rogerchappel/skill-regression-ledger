@@ -35,14 +35,14 @@ export function normalizeEntry(input = {}) {
   const entry = {
     id: input.id || `run-${new Date().toISOString().replace(/[-:.TZ]/g, '')}-${randomUUID().slice(0, 8)}`,
     recordedAt: input.recordedAt || new Date().toISOString(),
-    fixture: input.fixture || '',
-    command: input.command || '',
-    result: input.result || '',
-    expected: input.expected || '',
-    actual: input.actual || '',
-    classification: input.classification || input.result || '',
-    notes: input.notes || '',
-    evidence: input.evidence || []
+    fixture: input.fixture ?? '',
+    command: input.command ?? '',
+    result: input.result ?? '',
+    expected: input.expected ?? '',
+    actual: input.actual ?? '',
+    classification: input.classification ?? input.result ?? '',
+    notes: input.notes ?? '',
+    evidence: input.evidence ?? []
   };
   return entry;
 }
@@ -63,12 +63,17 @@ export function addEntry(targetDir, input) {
 export function validateEntry(entry) {
   const issues = [];
   for (const field of ['id', 'recordedAt', 'fixture', 'command', 'result', 'expected', 'actual', 'classification']) {
-    if (!entry[field] || String(entry[field]).trim() === '') issues.push(`missing ${field}`);
+    if (entry[field] === undefined || entry[field] === null || entry[field] === '') issues.push(`missing ${field}`);
+    else if (typeof entry[field] !== 'string' || entry[field].trim() === '') issues.push(`${field} must be a nonempty string`);
   }
-  if (entry.recordedAt && Number.isNaN(Date.parse(entry.recordedAt))) {
+  if (typeof entry.recordedAt === 'string' && entry.recordedAt.trim() && Number.isNaN(Date.parse(entry.recordedAt))) {
     issues.push(`invalid recordedAt ${entry.recordedAt}`);
   }
-  if (entry.result && !VALID_RESULTS.has(entry.result)) issues.push(`invalid result ${entry.result}`);
+  if (typeof entry.result === 'string' && entry.result.trim() && !VALID_RESULTS.has(entry.result)) issues.push(`invalid result ${entry.result}`);
+  if (entry.notes !== undefined && typeof entry.notes !== 'string') issues.push('notes must be a string');
+  if (entry.evidence !== undefined && (!Array.isArray(entry.evidence) || entry.evidence.some((item) => typeof item !== 'string' || item.trim() === ''))) {
+    issues.push('evidence must be an array of nonempty strings');
+  }
   return issues;
 }
 
