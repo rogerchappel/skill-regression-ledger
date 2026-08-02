@@ -19,6 +19,36 @@ test('cli initializes and reports a ledger', () => {
   assert.match(lines.join('\n'), /Skill Regression Ledger Report/);
 });
 
+test('cli rejects malformed options before appending evidence', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-options-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+  const file = path.join(dir, '.skill-regression-ledger', 'ledger.jsonl');
+  const valid = ['add', '--ledger', dir, '--fixture', 'fixtures/basic-fixture.md', '--command', 'npm test', '--result', 'pass', '--expected', 'ok', '--actual', 'ok'];
+
+  for (const argv of [
+    ['add', '--ledger', dir, '--fixture'],
+    [...valid, '--unknown', 'value'],
+    ['report', '--ledger', dir, '--format', 'yaml'],
+    [...valid.slice(0, -1), '']
+  ]) {
+    assert.equal(run(argv, io), 1);
+    assert.equal(fs.readFileSync(file, 'utf8'), '');
+  }
+  assert.match(lines.join('\n'), /Usage:/);
+});
+
+test('cli valid add, report, and validate flow remains supported', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-valid-'));
+  const { io, lines } = capture();
+
+  assert.equal(run(['init', dir], io), 0);
+  assert.equal(run(['add', '--ledger', dir, '--fixture', 'fixtures/basic-fixture.md', '--command', 'npm test', '--result', 'pass', '--expected', 'ok', '--actual', 'ok', '--evidence', 'test.log,report.json'], io), 0);
+  assert.equal(run(['report', '--ledger', dir, '--format', 'json'], io), 0);
+  assert.equal(run(['validate', '--ledger', dir], io), 0);
+  assert.match(lines.join('\n'), /"evidence": \[/);
+});
+
 test('cli validate returns non-zero for invalid ledger', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-invalid-'));
   const { io } = capture();

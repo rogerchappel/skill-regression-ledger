@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { addEntry, initLedger, readEntries, reportLedger, validateLedger } from '../src/index.js';
+import { addEntry, initLedger, readEntries, reportLedger, validateEntry, validateLedger } from '../src/index.js';
 
 function tempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-ledger-'));
@@ -81,6 +81,40 @@ test('validation fails for missing evidence fields', () => {
   const result = validateLedger(dir);
   assert.equal(result.ok, false);
   assert.equal(result.issues.some((issue) => issue.issue === 'missing fixture'), true);
+});
+
+test('library validation rejects non-string fields and malformed evidence', () => {
+  const base = {
+    id: 'run-manual',
+    recordedAt: '2026-08-02T00:00:00.000Z',
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass',
+    notes: '',
+    evidence: []
+  };
+
+  assert.deepEqual(validateEntry({ ...base, fixture: true }), ['fixture must be a nonempty string']);
+  assert.deepEqual(validateEntry({ ...base, evidence: 'test.log' }), ['evidence must be an array of nonempty strings']);
+  assert.deepEqual(validateEntry({ ...base, evidence: ['test.log', '  '] }), ['evidence must be an array of nonempty strings']);
+  assert.deepEqual(validateEntry({ ...base, notes: false }), ['notes must be a string']);
+});
+
+test('add rejects malformed input without appending to an existing ledger', () => {
+  const dir = tempDir();
+  const { file } = initLedger(dir);
+
+  assert.throws(() => addEntry(dir, {
+    fixture: true,
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok'
+  }), /fixture must be a nonempty string/);
+  assert.equal(fs.readFileSync(file, 'utf8'), '');
 });
 
 test('validation rejects missing and unusable required metadata', () => {
