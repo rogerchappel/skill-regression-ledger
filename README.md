@@ -41,6 +41,10 @@ skill-regression-ledger report --ledger <target-dir> --format markdown
 skill-regression-ledger report --ledger <target-dir> --format json
 ```
 
+Options require explicit values. The CLI exits with usage status `1` for a
+missing value, an unknown option, or a report format other than `markdown` or
+`json`; rejected `add` input is not appended to the ledger.
+
 ## Library API
 
 ```js
@@ -61,7 +65,7 @@ console.log(validateLedger('skills/my-skill'));
 
 ## CI Usage
 
-Run `npm test`, then record at least one fixture outcome from your own test harness. Fail the job on `skill-regression-ledger validate --ledger <dir>` when the ledger is empty or evidence is missing, malformed, or has a duplicate ID. An initialized but empty ledger is not valid evidence and the command exits nonzero.
+Run `npm test`, then record at least one fixture outcome from your own test harness. Fail the job on `skill-regression-ledger validate --ledger <dir>` when the ledger is empty or evidence is missing, malformed, or has a duplicate ID. Required evidence fields must be nonempty strings; optional `evidence` references must be an array of nonempty strings when using the library API. An initialized but empty ledger is not valid evidence and the command exits nonzero.
 
 Maintainers can run `npm run package:check` before a release. It inspects the
 publish file list, packs the project, imports the library from the tarball, and
