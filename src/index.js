@@ -78,6 +78,7 @@ export function validateEntry(entry) {
 }
 
 export function validateLedger(targetDir = process.cwd()) {
+  const { root } = ledgerPaths(targetDir);
   const entries = readEntries(targetDir);
   const issues = [];
   if (entries.length === 0) {
@@ -87,6 +88,16 @@ export function validateLedger(targetDir = process.cwd()) {
   entries.forEach((entry) => {
     if (entry._error) issues.push({ line: entry._line, issue: entry._error });
     validateEntry(entry).forEach((issue) => issues.push({ line: entry._line, issue }));
+    if (typeof entry.fixture === 'string' && entry.fixture.trim() && !fs.existsSync(path.resolve(root, entry.fixture))) {
+      issues.push({ line: entry._line, issue: `fixture not found: ${entry.fixture}` });
+    }
+    if (Array.isArray(entry.evidence)) {
+      entry.evidence.forEach((reference) => {
+        if (typeof reference === 'string' && reference.trim() && !fs.existsSync(path.resolve(root, reference))) {
+          issues.push({ line: entry._line, issue: `evidence not found: ${reference}` });
+        }
+      });
+    }
     if (entry.id) {
       if (idLines.has(entry.id)) {
         issues.push({ line: entry._line, issue: `duplicate id ${entry.id} (first seen on line ${idLines.get(entry.id)})` });

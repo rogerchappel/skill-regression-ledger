@@ -6,7 +6,12 @@ import test from 'node:test';
 import { addEntry, initLedger, readEntries, reportLedger, validateEntry, validateLedger } from '../src/index.js';
 
 function tempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-ledger-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-ledger-'));
+  fs.mkdirSync(path.join(dir, 'fixtures'));
+  for (const fixture of ['basic-fixture.md', 'drift-fixture.md']) {
+    fs.writeFileSync(path.join(dir, 'fixtures', fixture), 'fixture\n');
+  }
+  return dir;
 }
 
 test('initializes a ledger file', () => {
@@ -81,6 +86,61 @@ test('validation fails for missing evidence fields', () => {
   const result = validateLedger(dir);
   assert.equal(result.ok, false);
   assert.equal(result.issues.some((issue) => issue.issue === 'missing fixture'), true);
+});
+
+test('validation reports a missing fixture on its ledger line', () => {
+  const dir = tempDir();
+  const entry = addEntry(dir, {
+    fixture: 'fixtures/missing.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass'
+  });
+
+  assert.deepEqual(validateLedger(dir), {
+    ok: false,
+    entries: 1,
+    issues: [{ line: 1, issue: `fixture not found: ${entry.fixture}` }]
+  });
+});
+
+test('validation checks every optional evidence path', () => {
+  const dir = tempDir();
+  fs.mkdirSync(path.join(dir, 'results'));
+  fs.writeFileSync(path.join(dir, 'results', 'test.log'), 'passed\n');
+  addEntry(dir, {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass',
+    evidence: ['results/test.log', 'results/missing.json']
+  });
+
+  assert.deepEqual(validateLedger(dir).issues, [
+    { line: 1, issue: 'evidence not found: results/missing.json' }
+  ]);
+});
+
+test('validation accepts existing fixture and multiple evidence paths relative to the target', () => {
+  const dir = tempDir();
+  fs.mkdirSync(path.join(dir, 'results'));
+  fs.writeFileSync(path.join(dir, 'results', 'test.log'), 'passed\n');
+  fs.writeFileSync(path.join(dir, 'results', 'report.json'), '{}\n');
+  addEntry(dir, {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass',
+    evidence: ['results/test.log', 'results/report.json']
+  });
+
+  assert.deepEqual(validateLedger(dir), { ok: true, entries: 1, issues: [] });
 });
 
 test('library validation rejects non-string fields and malformed evidence', () => {
