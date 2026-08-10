@@ -9,11 +9,12 @@ npm install
 npm run smoke
 ./bin/skill-regression-ledger.js init ./examples/my-skill
 ./bin/skill-regression-ledger.js add --ledger ./examples/my-skill \
-  --fixture fixtures/basic-fixture.md \
+  --fixture ../../fixtures/basic-fixture.md \
   --command "npm test" \
   --result pass \
   --expected "tests pass" \
   --actual "tests pass"
+./bin/skill-regression-ledger.js validate --ledger ./examples/my-skill
 ./bin/skill-regression-ledger.js report --ledger ./examples/my-skill --format markdown
 ```
 
