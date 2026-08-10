@@ -10,6 +10,12 @@ function capture() {
   return { io: { log: (value) => lines.push(String(value)), error: (value) => lines.push(String(value)) }, lines };
 }
 
+function writeReferences(dir, evidence = []) {
+  fs.mkdirSync(path.join(dir, 'fixtures'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'fixtures', 'basic-fixture.md'), 'fixture\n');
+  for (const reference of evidence) fs.writeFileSync(path.join(dir, reference), 'evidence\n');
+}
+
 test('cli initializes and reports a ledger', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-'));
   const { io, lines } = capture();
@@ -41,12 +47,25 @@ test('cli rejects malformed options before appending evidence', () => {
 test('cli valid add, report, and validate flow remains supported', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-valid-'));
   const { io, lines } = capture();
+  writeReferences(dir, ['test.log', 'report.json']);
 
   assert.equal(run(['init', dir], io), 0);
   assert.equal(run(['add', '--ledger', dir, '--fixture', 'fixtures/basic-fixture.md', '--command', 'npm test', '--result', 'pass', '--expected', 'ok', '--actual', 'ok', '--evidence', 'test.log,report.json'], io), 0);
   assert.equal(run(['report', '--ledger', dir, '--format', 'json'], io), 0);
   assert.equal(run(['validate', '--ledger', dir], io), 0);
   assert.match(lines.join('\n'), /"evidence": \[/);
+});
+
+test('cli validate returns non-zero with line-specific missing references', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-references-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+  run(['add', '--ledger', dir, '--fixture', 'fixtures/missing.md', '--command', 'npm test', '--result', 'pass', '--expected', 'ok', '--actual', 'ok', '--evidence', 'missing.log'], io);
+
+  assert.equal(run(['validate', '--ledger', dir], io), 2);
+  assert.match(lines.join('\n'), /"line": 1/);
+  assert.match(lines.join('\n'), /fixture not found: fixtures\/missing\.md/);
+  assert.match(lines.join('\n'), /evidence not found: missing\.log/);
 });
 
 test('cli validate returns non-zero for invalid ledger', () => {

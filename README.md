@@ -30,6 +30,9 @@ Each JSONL entry includes:
 - optional evidence file references
 
 Ledgers are stored at `.skill-regression-ledger/ledger.jsonl` under the selected skill or prompt directory.
+Fixture and optional evidence paths are resolved relative to that selected
+directory (absolute paths remain absolute). `validate` reports missing
+references on the entry's JSONL line and exits nonzero.
 
 ## CLI
 

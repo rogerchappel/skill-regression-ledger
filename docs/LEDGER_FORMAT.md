@@ -18,6 +18,13 @@ Optional fields:
 - `notes`
 - `evidence`
 
+`fixture` and each string in the optional `evidence` array are filesystem
+references. Relative references are resolved from the selected ledger target
+directory (the directory that contains `.skill-regression-ledger`), not from
+the current working directory or the ledger file's directory. Absolute paths
+remain absolute. Validation fails when any referenced path does not exist and
+reports each missing fixture or evidence reference against its JSONL line.
+
 Valid `result` values are `pass`, `fail`, `drift`, and `blocked`.
 
 The ledger must contain at least one entry; an initialized empty ledger fails
