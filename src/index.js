@@ -22,11 +22,14 @@ export function initLedger(targetDir = process.cwd()) {
 export function readEntries(targetDir = process.cwd()) {
   const { file } = ledgerPaths(targetDir);
   if (!fs.existsSync(file)) return [];
-  return fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((line, index) => {
+  return fs.readFileSync(file, 'utf8').split('\n')
+    .map((line, index) => ({ line, lineNumber: index + 1 }))
+    .filter(({ line }) => line.trim() !== '')
+    .map(({ line, lineNumber }) => {
     try {
-      return { ...JSON.parse(line), _line: index + 1 };
+      return { ...JSON.parse(line), _line: lineNumber };
     } catch (error) {
-      return { _line: index + 1, _error: `Invalid JSON: ${error.message}` };
+      return { _line: lineNumber, _error: `Invalid JSON: ${error.message}` };
     }
   });
 }
