@@ -1,6 +1,9 @@
 # Ledger Format
 
 A ledger is newline-delimited JSON at `.skill-regression-ledger/ledger.jsonl`.
+Empty and whitespace-only lines are permitted and ignored. They retain their
+physical positions, so validation diagnostics always use the line numbers that
+tools such as `nl -ba` display.
 
 Required fields:
 
@@ -23,7 +26,8 @@ references. Relative references are resolved from the selected ledger target
 directory (the directory that contains `.skill-regression-ledger`), not from
 the current working directory or the ledger file's directory. Absolute paths
 remain absolute. Validation fails when any referenced path does not exist and
-reports each missing fixture or evidence reference against its JSONL line.
+reports each missing fixture or evidence reference against its physical JSONL
+line.
 
 Valid `result` values are `pass`, `fail`, `drift`, and `blocked`.
 

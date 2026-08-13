@@ -106,6 +106,38 @@ test('validation reports a missing fixture on its ledger line', () => {
   });
 });
 
+test('validation preserves physical line numbers around blank lines', () => {
+  const dir = tempDir();
+  const { file } = initLedger(dir);
+  const entry = {
+    id: 'run-blank-lines',
+    recordedAt: '2026-08-13T11:00:00.000Z',
+    fixture: 'fixtures/missing.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass',
+    evidence: ['missing.log']
+  };
+  fs.writeFileSync(file, `\n${JSON.stringify(entry)}\n   \nnot-json\n`, 'utf8');
+
+  assert.deepEqual(readEntries(dir).map((item) => item._line), [2, 4]);
+  assert.deepEqual(validateLedger(dir).issues, [
+    { line: 2, issue: 'fixture not found: fixtures/missing.md' },
+    { line: 2, issue: 'evidence not found: missing.log' },
+    { line: 4, issue: "Invalid JSON: Unexpected token 'o', \"not-json\" is not valid JSON" },
+    { line: 4, issue: 'missing id' },
+    { line: 4, issue: 'missing recordedAt' },
+    { line: 4, issue: 'missing fixture' },
+    { line: 4, issue: 'missing command' },
+    { line: 4, issue: 'missing result' },
+    { line: 4, issue: 'missing expected' },
+    { line: 4, issue: 'missing actual' },
+    { line: 4, issue: 'missing classification' }
+  ]);
+});
+
 test('validation checks every optional evidence path', () => {
   const dir = tempDir();
   fs.mkdirSync(path.join(dir, 'results'));
