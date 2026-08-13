@@ -68,6 +68,31 @@ test('cli validate returns non-zero with line-specific missing references', () =
   assert.match(lines.join('\n'), /evidence not found: missing\.log/);
 });
 
+test('cli validate reports physical lines when blank lines are present', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-lines-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+  const file = path.join(dir, '.skill-regression-ledger', 'ledger.jsonl');
+  const entry = {
+    id: 'run-cli-lines',
+    recordedAt: '2026-08-13T11:00:00.000Z',
+    fixture: 'fixtures/missing.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'ok',
+    actual: 'ok',
+    classification: 'pass'
+  };
+  fs.writeFileSync(file, `\n${JSON.stringify(entry)}\n\n{malformed\n`, 'utf8');
+
+  assert.equal(run(['validate', '--ledger', dir], io), 2);
+  const output = lines.join('\n');
+  assert.match(output, /"line": 2/);
+  assert.match(output, /fixture not found: fixtures\/missing\.md/);
+  assert.match(output, /"line": 4/);
+  assert.match(output, /Invalid JSON/);
+});
+
 test('cli validate returns non-zero for invalid ledger', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-invalid-'));
   const { io } = capture();
