@@ -41,11 +41,16 @@ numbers.
 
 ```bash
 skill-regression-ledger init <target-dir>
+skill-regression-ledger init --ledger <target-dir>
 skill-regression-ledger add --ledger <target-dir> --fixture <file> --command "npm test" --result pass --expected "..." --actual "..."
 skill-regression-ledger validate --ledger <target-dir>
 skill-regression-ledger report --ledger <target-dir> --format markdown
 skill-regression-ledger report --ledger <target-dir> --format json
 ```
+
+`init` accepts either the positional target or the global `--ledger` option. `report`
+exits nonzero with an initialization command when the selected ledger does not exist;
+an initialized ledger with no entries still produces a valid empty report.
 
 Options require explicit values. The CLI exits with usage status `1` for a
 missing value, an unknown option, or a report format other than `markdown` or
