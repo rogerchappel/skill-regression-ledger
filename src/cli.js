@@ -1,8 +1,8 @@
 import { addEntry, initLedger, reportLedger, validateLedger } from './index.js';
 
-const USAGE = 'Usage: skill-regression-ledger <init|add|report|validate> [target] [--ledger dir]';
+const USAGE = 'Usage: skill-regression-ledger <init|add|report|validate> [target] [--ledger <dir>]';
 const OPTIONS = {
-  init: new Set(),
+  init: new Set(['ledger']),
   add: new Set(['ledger', 'fixture', 'command', 'result', 'expected', 'actual', 'classification', 'notes', 'evidence']),
   report: new Set(['ledger', 'format']),
   validate: new Set(['ledger'])
@@ -56,7 +56,7 @@ export function run(argv = process.argv.slice(2), io = console) {
   const ledger = args.ledger || target || process.cwd();
 
   if (command === 'init') {
-    const paths = initLedger(target || process.cwd());
+    const paths = initLedger(ledger);
     io.log(`Initialized ledger: ${paths.file}`);
     return 0;
   }
@@ -89,8 +89,13 @@ export function run(argv = process.argv.slice(2), io = console) {
       io.error(USAGE);
       return 1;
     }
-    io.log(reportLedger(ledger, args.format || 'markdown'));
-    return 0;
+    try {
+      io.log(reportLedger(ledger, args.format || 'markdown'));
+      return 0;
+    } catch (error) {
+      io.error(error.message);
+      return 1;
+    }
   }
 
   if (command === 'validate') {
