@@ -25,6 +25,21 @@ test('cli initializes and reports a ledger', () => {
   assert.match(lines.join('\n'), /Skill Regression Ledger Report/);
 });
 
+test('cli init accepts the global --ledger target syntax', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-ledger-option-'));
+  const { io } = capture();
+  assert.equal(run(['init', '--ledger', dir], io), 0);
+  assert.equal(fs.existsSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl')), true);
+});
+
+test('cli report fails with an actionable error when the ledger is missing', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-missing-'));
+  const { io, lines } = capture();
+  assert.equal(run(['report', '--ledger', dir], io), 1);
+  assert.match(lines.join('\n'), /Ledger not found at .*ledger\.jsonl/);
+  assert.match(lines.join('\n'), /skill-regression-ledger init/);
+});
+
 test('cli rejects malformed options before appending evidence', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-options-'));
   const { io, lines } = capture();
