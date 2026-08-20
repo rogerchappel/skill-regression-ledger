@@ -122,6 +122,10 @@ export function summarize(entries) {
 }
 
 export function reportLedger(targetDir = process.cwd(), format = 'markdown') {
+  const { file } = ledgerPaths(targetDir);
+  if (!fs.existsSync(file)) {
+    throw new Error(`Ledger not found at ${file}. Run \`skill-regression-ledger init ${path.resolve(targetDir)}\` first.`);
+  }
   const entries = readEntries(targetDir);
   const summary = summarize(entries);
   if (format === 'json') return JSON.stringify({ summary, entries }, null, 2);
