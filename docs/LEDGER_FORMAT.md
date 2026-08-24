@@ -25,9 +25,10 @@ Optional fields:
 references. Relative references are resolved from the selected ledger target
 directory (the directory that contains `.skill-regression-ledger`), not from
 the current working directory or the ledger file's directory. Absolute paths
-remain absolute. Validation fails when any referenced path does not exist and
-reports each missing fixture or evidence reference against its physical JSONL
-line.
+remain absolute. Every reference must resolve to a regular file. Validation
+fails when a path is missing, is a directory, or is another non-regular target,
+and reports each invalid fixture or evidence reference against its physical
+JSONL line.
 
 Valid `result` values are `pass`, `fail`, `drift`, and `blocked`.
 
