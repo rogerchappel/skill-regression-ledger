@@ -88,6 +88,36 @@ test('validation fails for missing evidence fields', () => {
   assert.equal(result.issues.some((issue) => issue.issue === 'missing fixture'), true);
 });
 
+test('validation rejects fixture and evidence directories', () => {
+  const dir = tempDir();
+  initLedger(dir);
+  fs.mkdirSync(path.join(dir, 'fixture-dir'));
+  fs.mkdirSync(path.join(dir, 'evidence-dir'));
+  fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), `${JSON.stringify({
+    id: 'directory-references', recordedAt: new Date().toISOString(), fixture: 'fixture-dir',
+    command: 'npm test', result: 'pass', expected: 'ok', actual: 'ok', classification: 'pass',
+    evidence: ['evidence-dir']
+  })}\n`);
+  const result = validateLedger(dir);
+  assert.deepEqual(result.issues.filter(({ issue }) => issue.includes('regular file')), [
+    { line: 1, issue: 'fixture is not a regular file: fixture-dir' },
+    { line: 1, issue: 'evidence is not a regular file: evidence-dir' }
+  ]);
+});
+
+test('validation accepts relative and absolute regular-file references', () => {
+  const dir = tempDir();
+  initLedger(dir);
+  fs.writeFileSync(path.join(dir, 'fixture.md'), 'fixture');
+  const evidence = path.join(dir, 'evidence.txt');
+  fs.writeFileSync(evidence, 'evidence');
+  fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), `${JSON.stringify({
+    id: 'file-references', recordedAt: new Date().toISOString(), fixture: 'fixture.md',
+    command: 'npm test', result: 'pass', expected: 'ok', actual: 'ok', classification: 'pass', evidence: [evidence]
+  })}\n`);
+  assert.equal(validateLedger(dir).ok, true);
+});
+
 test('validation reports a missing fixture on its ledger line', () => {
   const dir = tempDir();
   const entry = addEntry(dir, {

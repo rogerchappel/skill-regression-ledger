@@ -116,6 +116,21 @@ test('cli validate returns non-zero for invalid ledger', () => {
   assert.equal(run(['validate', '--ledger', dir], io), 2);
 });
 
+test('cli validate reports directory references with their ledger line', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-directory-'));
+  const { io, lines } = capture();
+  run(['init', dir], io);
+  fs.mkdirSync(path.join(dir, 'fixture-dir'));
+  fs.mkdirSync(path.join(dir, 'evidence-dir'));
+  fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), `${JSON.stringify({
+    id: 'directory-references', recordedAt: new Date().toISOString(), fixture: 'fixture-dir',
+    command: 'npm test', result: 'pass', expected: 'ok', actual: 'ok', classification: 'pass', evidence: ['evidence-dir']
+  })}\n`);
+  assert.equal(run(['validate', '--ledger', dir], io), 2);
+  assert.match(lines.join('\n'), /line 1: fixture is not a regular file: fixture-dir/);
+  assert.match(lines.join('\n'), /line 1: evidence is not a regular file: evidence-dir/);
+});
+
 test('cli validate returns non-zero when an initialized ledger has no evidence', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-regression-cli-empty-'));
   const { io, lines } = capture();
