@@ -127,8 +127,9 @@ test('cli validate reports directory references with their ledger line', () => {
     command: 'npm test', result: 'pass', expected: 'ok', actual: 'ok', classification: 'pass', evidence: ['evidence-dir']
   })}\n`);
   assert.equal(run(['validate', '--ledger', dir], io), 2);
-  assert.match(lines.join('\n'), /line 1: fixture is not a regular file: fixture-dir/);
-  assert.match(lines.join('\n'), /line 1: evidence is not a regular file: evidence-dir/);
+  const output = lines.join('\n');
+  assert.match(output, /"line": 1[\s\S]*"issue": "fixture is not a regular file: fixture-dir"/);
+  assert.match(output, /"line": 1[\s\S]*"issue": "evidence is not a regular file: evidence-dir"/);
 });
 
 test('cli validate returns non-zero when an initialized ledger has no evidence', () => {
