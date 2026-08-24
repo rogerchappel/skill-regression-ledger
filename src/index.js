@@ -80,6 +80,16 @@ export function validateEntry(entry) {
   return issues;
 }
 
+function validateFileReference(root, reference, kind) {
+  const resolved = path.resolve(root, reference);
+  try {
+    return fs.statSync(resolved).isFile() ? null : `${kind} is not a regular file: ${reference}`;
+  } catch (error) {
+    if (error?.code === 'ENOENT' || error?.code === 'ENOTDIR') return `${kind} not found: ${reference}`;
+    return `${kind} cannot be inspected: ${reference}`;
+  }
+}
+
 export function validateLedger(targetDir = process.cwd()) {
   const { root } = ledgerPaths(targetDir);
   const entries = readEntries(targetDir);
@@ -91,13 +101,15 @@ export function validateLedger(targetDir = process.cwd()) {
   entries.forEach((entry) => {
     if (entry._error) issues.push({ line: entry._line, issue: entry._error });
     validateEntry(entry).forEach((issue) => issues.push({ line: entry._line, issue }));
-    if (typeof entry.fixture === 'string' && entry.fixture.trim() && !fs.existsSync(path.resolve(root, entry.fixture))) {
-      issues.push({ line: entry._line, issue: `fixture not found: ${entry.fixture}` });
+    if (typeof entry.fixture === 'string' && entry.fixture.trim()) {
+      const issue = validateFileReference(root, entry.fixture, 'fixture');
+      if (issue) issues.push({ line: entry._line, issue });
     }
     if (Array.isArray(entry.evidence)) {
       entry.evidence.forEach((reference) => {
-        if (typeof reference === 'string' && reference.trim() && !fs.existsSync(path.resolve(root, reference))) {
-          issues.push({ line: entry._line, issue: `evidence not found: ${reference}` });
+        if (typeof reference === 'string' && reference.trim()) {
+          const issue = validateFileReference(root, reference, 'evidence');
+          if (issue) issues.push({ line: entry._line, issue });
         }
       });
     }
