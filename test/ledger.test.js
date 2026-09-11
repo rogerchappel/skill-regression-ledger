@@ -334,3 +334,29 @@ test('reports json summaries', () => {
   const parsed = JSON.parse(reportLedger(dir, 'json'));
   assert.equal(parsed.summary.blocked, 1);
 });
+
+test('json report pins the public entry schema and separates malformed lines', () => {
+  const dir = tempDir();
+  addEntry(dir, {
+    fixture: 'fixtures/basic-fixture.md',
+    command: 'npm test',
+    result: 'pass',
+    expected: 'tests pass',
+    actual: 'tests pass',
+    classification: 'pass'
+  });
+  fs.appendFileSync(path.join(dir, '.skill-regression-ledger', 'ledger.jsonl'), '{not json}\n');
+
+  const parsed = JSON.parse(reportLedger(dir, 'json'));
+
+  assert.deepEqual(Object.keys(parsed).sort(), ['entries', 'invalidEntries', 'summary']);
+  assert.equal(parsed.entries.length, 1);
+  assert.deepEqual(
+    Object.keys(parsed.entries[0]).sort(),
+    ['actual', 'classification', 'command', 'evidence', 'expected', 'fixture', 'id', 'notes', 'recordedAt', 'result']
+  );
+  assert.equal(parsed.summary.total, 2);
+  assert.equal(parsed.summary.invalid, 1);
+  assert.deepEqual(parsed.invalidEntries, [{ line: 2, error: parsed.invalidEntries[0].error }]);
+  assert.match(parsed.invalidEntries[0].error, /^Invalid JSON:/);
+});

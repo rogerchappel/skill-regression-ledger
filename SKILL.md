@@ -21,10 +21,10 @@ No approval is needed for local ledger writes. Ask for approval before running a
 
 1. Initialize the ledger with `skill-regression-ledger init <dir>`.
 2. Run the fixture command separately.
-3. Record the observed result with `skill-regression-ledger add --ledger <dir> --fixture <file> --command "<cmd>" --result pass|fail|drift --expected "<outcome>" --actual "<outcome>"`.
+3. Record the observed result with `skill-regression-ledger add --ledger <dir> --fixture <file> --command "<cmd>" --result pass|fail|drift|blocked --expected "<outcome>" --actual "<outcome>"`.
 4. Run `skill-regression-ledger validate --ledger <dir>`.
 5. Share `skill-regression-ledger report --ledger <dir> --format markdown` in the review handoff.
 
 ## Validation
 
-A valid entry has a fixture path, command, result, expected outcome, actual outcome, and classification, all as nonempty strings. Optional evidence references use an array of nonempty strings in the library API or a comma-separated value with CLI `--evidence`. CLI options require values, and report format is either `markdown` or `json`. Mark entries as `drift` when behavior changed but the reviewer has not decided whether it is acceptable.
+A valid entry has a fixture path, command, result, expected outcome, actual outcome, and classification, all as nonempty strings. Optional evidence references use an array of nonempty strings in the library API or a comma-separated value with CLI `--evidence`. CLI options require values, and report format is either `markdown` or `json`. Mark entries as `drift` when behavior changed but the reviewer has not decided whether it is acceptable. Mark entries as `blocked` when the fixture command could not run and record the blocker in the actual outcome and reviewer notes.
