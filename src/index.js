@@ -140,7 +140,19 @@ export function reportLedger(targetDir = process.cwd(), format = 'markdown') {
   }
   const entries = readEntries(targetDir);
   const summary = summarize(entries);
-  if (format === 'json') return JSON.stringify({ summary, entries }, null, 2);
+  if (format === 'json') {
+    const publicEntries = [];
+    const invalidEntries = [];
+    for (const entry of entries) {
+      if (entry._error) {
+        invalidEntries.push({ line: entry._line, error: entry._error });
+        continue;
+      }
+      const { _line, _error, ...publicEntry } = entry;
+      publicEntries.push(publicEntry);
+    }
+    return JSON.stringify({ summary, entries: publicEntries, invalidEntries }, null, 2);
+  }
   const tableCell = (value) => String(value || 'missing')
     .replace(/\r\n?|\n/g, '<br>')
     .replace(/\|/g, '\\|');
