@@ -53,6 +53,21 @@ skill-regression-ledger report --ledger <target-dir> --format json
 exits nonzero with an initialization command when the selected ledger does not exist;
 an initialized ledger with no entries still produces a valid empty report.
 
+### JSON report
+
+`report --format json` emits one stable JSON document with three top-level keys:
+
+- `summary`: `{ total, pass, fail, drift, blocked, invalid }` counts.
+- `entries`: one object per JSONL line that parsed as JSON, holding only the
+  evidence-model fields (`id`, `recordedAt`, `fixture`, `command`, `result`,
+  `expected`, `actual`, `classification`, and the optional `notes`/`evidence`).
+  Internal bookkeeping fields (line numbers, parse diagnostics) are never
+  included; structurally invalid entries keep their parsed fields and count
+  toward `summary.invalid`.
+- `invalidEntries`: one `{ line, error }` object per JSONL line that is not valid
+  JSON, where `line` is the 1-based physical line in `ledger.jsonl` (empty and
+  whitespace-only lines are never listed).
+
 Options require explicit values. The CLI exits with usage status `1` for a
 missing value, an unknown option, or a report format other than `markdown` or
 `json`; rejected `add` input is not appended to the ledger.
