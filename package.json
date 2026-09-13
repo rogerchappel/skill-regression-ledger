@@ -1,24 +1,29 @@
 {
-  "name": "skill-regression-ledger",
-  "version": "0.1.0",
-  "description": "Append-only regression evidence ledger for agent skills and prompts.",
-  "type": "module",
+  "author": "Roger Chappel",
   "bin": {
     "skill-regression-ledger": "./bin/skill-regression-ledger.js"
+  },
+  "description": "Append-only regression evidence ledger for agent skills and prompts.",
+  "engines": {
+    "node": ">=20"
   },
   "exports": {
     ".": "./src/index.js"
   },
-  "scripts": {
-    "test": "node --test test/*.test.js",
-    "check": "node scripts/check.mjs",
-    "build": "node scripts/build.mjs",
-    "smoke": "node scripts/smoke.mjs"
-  },
-  "keywords": ["agent-skills", "regression", "ledger", "cli"],
-  "author": "Roger Chappel",
+  "keywords": [
+    "agent-skills",
+    "regression",
+    "ledger",
+    "cli"
+  ],
   "license": "MIT",
-  "engines": {
-    "node": ">=20"
-  }
+  "name": "skill-regression-ledger",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "node scripts/build.mjs && node --test test/*.test.js"
+  },
+  "type": "module",
+  "version": "0.1.0"
 }
