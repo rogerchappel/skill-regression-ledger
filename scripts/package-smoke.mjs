@@ -32,6 +32,8 @@ try {
     'README.md',
     'SKILL.md',
     'bin/skill-regression-ledger.js',
+    'dist/src-cli.js',
+    'dist/src-index.js',
     'package.json',
     'src/cli.js',
     'src/index.js'
