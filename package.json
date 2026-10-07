@@ -33,8 +33,14 @@
     "check": "node scripts/check.mjs",
     "build": "node scripts/build.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "package:check": "node scripts/package-smoke.mjs"
+    "package:check": "node scripts/package-smoke.mjs",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:check"
   },
-  "keywords": ["agent-skills", "regression", "ledger", "cli"],
+  "keywords": [
+    "agent-skills",
+    "regression",
+    "ledger",
+    "cli"
+  ],
   "license": "MIT"
 }
