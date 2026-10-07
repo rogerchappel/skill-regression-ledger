@@ -108,3 +108,13 @@ This package is local-only. It does not upload telemetry, call model APIs, or mu
 - No hosted dashboard.
 - No automatic command execution; run verification commands yourself and record outcomes.
 - JSONL append order is the source of truth for now.
+
+### Release verification
+
+Before preparing a release, run the same aggregate gate used by CI:
+
+```sh
+npm run release:check
+```
+
+It runs the repository checks, test suite, smoke test, and package-content check.
